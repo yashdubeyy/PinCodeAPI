@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Post Office Finder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #5e35b1;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            display: none;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            flex-direction: column;
+            display: flex;
+        }
+
+        .app-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .app-header h1 {
+            color: #5e35b1;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .app-header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+        }
+
+        .input {
+            width: 100%;
+            height: 42px;
+            border: 2px solid #7e57c2;
+            border-radius: 5px;
+            padding: 10px 15px;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .input:focus {
+            outline: none;
+            border-color: #5e35b1;
+            box-shadow: 0 0 0 2px rgba(94, 53, 177, 0.2);
+        }
+
+        .search-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .search-type {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .search-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        label {
+            color: #5e35b1;
+            font-weight: 500;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #5e35b1;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #4527a0;
+        }
+
+        .btn-secondary {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d32f2f;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .message.error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .message.success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .message.loading {
+            background-color: #e3f2fd;
+            color: #1565c0;
+        }
+
+        .output {
+            margin-top: 20px;
+        }
+
+        .post-office-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .post-office-card {
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .post-office-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .post-office-card h3 {
+            color: #5e35b1;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .post-office-card p {
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .post-office-details {
+            margin-top: 12px;
+            border-top: 1px solid #e0e0e0;
+            padding-top: 12px;
+        }
+
+        .detail-item {
+            display: flex;
+            margin-bottom: 5px;
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: #666;
+            width: 120px;
+            min-width: 120px;
+        }
+
+        .detail-value {
+            color: #333;
+        }
+
+        .filter-container {
+            margin-bottom: 20px;
+        }
+
+        #filterInput {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 15px;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 30px;
+            color: #666;
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .post-office-list {
+                grid-template-columns: 1fr;
+            }
+
+            .search-controls {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+
+            .search-type {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .container {
+                padding: 15px;
+            }
+
+            .app-header h1 {
+                font-size: 24px;
+            }
+
+            #mapView {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="app-header">
+            <h1>India Post Office Finder</h1>
+            <p>Find post offices by pincode or branch name</p>
+        </div>
+
+        <div class="search-container">
+            <div class="search-type">
+                <div class="search-option">
+                    <input type="radio" id="searchByPin" name="searchType" value="pincode" checked>
+                    <label for="searchByPin">Search by Pincode</label>
+                </div>
+                <div class="search-option">
+                    <input type="radio" id="searchByBranch" name="searchType" value="branch">
+                    <label for="searchByBranch">Search by Branch Name</label>
+                </div>
+            </div>
+
+            <form class="pincode">
+                <label for="searchInput">Enter search term:</label>
+                <div class="search-controls">
+                    <input type="search" id="searchInput" required pattern="[\d]{6}" name="pincode" class="input"
+                        placeholder="Enter 6-digit pincode">
+                    <button type="submit" class="btn-primary">Search</button>
+                    <button type="button" id="clearBtn" class="btn-secondary">Clear</button>
+                </div>
+            </form>
+
+            <div class="filter-container" style="display: none;">
+                <label for="filterInput">Filter results:</label>
+                <input type="text" id="filterInput" placeholder="Type to filter results">
+            </div>
+
+            <div class="status">
+                <div class="loader"></div>
+                <div class="message"></div>
+            </div>
+        </div>
+        <div class="output">
+            <div class="post-office-list"></div>
+        </div>
+    </div>
+
+</body>
+<script>
+    "use strict";    // DOM Elements
+    const form = document.querySelector(".pincode");
+    const searchInput = document.querySelector('#searchInput');
+    const messageElement = document.querySelector(".message");
+    const loaderElement = document.querySelector(".loader");
+    const outputElement = document.querySelector(".post-office-list");
+    const clearButton = document.querySelector("#clearBtn");
+    const searchTypeRadios = document.querySelectorAll('input[name="searchType"]');
+    const filterContainer = document.querySelector('.filter-container');
+    const filterInput = document.querySelector('#filterInput');
+
+    // Store post office data for filtering
+    let postOfficeData = [];
+
+    // Event Listeners
+
+    // Update input validation based on search type
+    searchTypeRadios.forEach(radio => {
+        radio.addEventListener('change', function () {
+            if (this.value === 'pincode') {
+                searchInput.setAttribute('pattern', '[\\d]{6}');
+                searchInput.setAttribute('placeholder', 'Enter 6-digit pincode');
+            } else {
+                searchInput.removeAttribute('pattern');
+                searchInput.setAttribute('placeholder', 'Enter branch name');
+            }
+        });
+    });
+
+    // Form submission
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const searchValue = searchInput.value.trim();
+        const searchType = document.querySelector('input[name="searchType"]:checked').value;
+
+        if (!searchValue) return;
+
+        // Validate pincode if searching by pincode
+        if (searchType === 'pincode' && !/^\d{6}$/.test(searchValue)) {
+            showMessage("Please enter a valid 6-digit pincode", "error");
+            return;
+        }
+
+        performSearch(searchValue, searchType);
+    });    // Clear results
+    clearButton.addEventListener("click", function () {
+        searchInput.value = '';
+        outputElement.innerHTML = '';
+        messageElement.textContent = '';
+        messageElement.className = 'message';
+        filterContainer.style.display = 'none';
+        postOfficeData = [];
+    });
+
+    // Filter results
+    filterInput.addEventListener('input', function () {
+        const filterText = this.value.toLowerCase();
+        renderPostOffices(
+            postOfficeData.filter(po =>
+                po.Name.toLowerCase().includes(filterText) ||
+                po.District.toLowerCase().includes(filterText) ||
+                po.State.toLowerCase().includes(filterText)
+            )
+        );
+    });
+
+    // Functions
+
+    function performSearch(searchValue, searchType) {
+        // Show loading state
+        showMessage("Searching...", "loading");
+        loaderElement.style.display = "block";
+        outputElement.innerHTML = '';
+        filterContainer.style.display = 'none';
+
+        let url = '';
+
+        if (searchType === 'pincode') {
+            url = `https://api.postalpincode.in/pincode/${searchValue}`;
+        } else {
+            url = `https://api.postalpincode.in/postoffice/${searchValue}`;
+        }
+
+        fetch(url)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                loaderElement.style.display = "none";
+
+                if (data[0].Status === "Error" || data[0].PostOffice === null) {
+                    showMessage(`No results found for "${searchValue}"`, "error");
+                    postOfficeData = [];
+                } else {
+                    postOfficeData = data[0].PostOffice;
+                    showMessage(`Found ${postOfficeData.length} post offices for "${searchValue}"`, "success");
+                    renderPostOffices(postOfficeData);
+
+                    // Show filter if we have multiple results
+                    if (postOfficeData.length > 1) {
+                        filterContainer.style.display = 'block';
+                    }
+                }
+            })
+            .catch(error => {
+                loaderElement.style.display = "none";
+                showMessage("Error fetching data. Please try again.", "error");
+                console.error(error);
+            });
+    } function renderPostOffices(postOffices) {
+        if (!postOffices || postOffices.length === 0) {
+            outputElement.innerHTML = '<div class="no-results">No post offices found</div>';
+            return;
+        }
+
+        let html = '';
+
+        postOffices.forEach(po => {
+            html += `
+                <div class="post-office-card">
+                    <h3>${po.Name}</h3>
+                    <p>${po.Block ? po.Block + ', ' : ''}${po.District}, ${po.State}</p>
+                    <p>PIN: ${po.Pincode}</p>
+                    
+                    <div class="post-office-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Branch Type:</span>
+                            <span class="detail-value">${po.BranchType || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Delivery:</span>
+                            <span class="detail-value">${po.DeliveryStatus || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Circle:</span>
+                            <span class="detail-value">${po.Circle || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Division:</span>
+                            <span class="detail-value">${po.Division || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Region:</span>
+                            <span class="detail-value">${po.Region || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        outputElement.innerHTML = html;
+    } function showMessage(message, type) {
+        messageElement.textContent = message;
+        messageElement.className = `message ${type || ''}`;
+    }
+</script>
+
+</html>
